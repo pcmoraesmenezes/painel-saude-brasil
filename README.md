@@ -35,6 +35,8 @@ O painel só lê arquivos de `data/`, sem segredo nem variável de ambiente.
     internações no SUS, internações em planos, vínculos com planos e população.
   - `pop_uf_projecao.csv`: projeção de população por estado, 2000 a 2070.
   - `fontes.csv`: de onde vem cada base.
+  - `amostras.json`: linhas reais do arquivo de origem (sem datas completas nem números de identificação) e da
+    tabela resumida.
   - `uf.geojson`, `municipios.geojson`, `municipios_nomes.csv`: malha e nomes do IBGE.
 - `tests/`: testes do app e dos dados.
 

@@ -1,0 +1,429 @@
+{
+ "brutos": {
+  "SIM": {
+   "uma_linha_e": "um óbito",
+   "arquivo": "Mortalidade_Geral_2024.csv",
+   "n_colunas": 88,
+   "colunas": [
+    "IDADE",
+    "SEXO",
+    "RACACOR",
+    "CODMUNRES",
+    "CAUSABAS",
+    "LOCOCOR"
+   ],
+   "linhas": [
+    [
+     "466",
+     "1",
+     "1",
+     "411990",
+     "I255",
+     "1"
+    ],
+    [
+     "454",
+     "1",
+     "4",
+     "330045",
+     "C220",
+     "1"
+    ],
+    [
+     "496",
+     "2",
+     "4",
+     "310040",
+     "I509",
+     "3"
+    ]
+   ],
+   "como_ler": "Uma linha é um óbito. IDADE 466 = 66 anos (o primeiro dígito é a unidade, 4 = anos; o resto é o valor). CAUSABAS é a causa básica em CID-10. SEXO 1 = masculino, 2 = feminino."
+  },
+  "SIH": {
+   "uma_linha_e": "uma internação",
+   "arquivo": "arquivo mensal de um estado, janeiro de 2019",
+   "n_colunas": 113,
+   "colunas": [
+    "ANO_CMPT",
+    "MES_CMPT",
+    "MUNIC_RES",
+    "SEXO",
+    "IDADE",
+    "DIAG_PRINC",
+    "CAR_INT",
+    "MORTE",
+    "VAL_TOT"
+   ],
+   "linhas": [
+    [
+     "2019",
+     "01",
+     "120070",
+     "3",
+     "36",
+     "O808",
+     "02",
+     "0",
+     "451.4"
+    ],
+    [
+     "2019",
+     "01",
+     "120050",
+     "1",
+     "51",
+     "A084",
+     "02",
+     "0",
+     "324.9"
+    ],
+    [
+     "2019",
+     "01",
+     "120005",
+     "1",
+     "62",
+     "N298",
+     "02",
+     "0",
+     "356.36"
+    ]
+   ],
+   "como_ler": "Uma linha é uma internação paga pelo SUS. SEXO 1 = masculino, 3 = feminino. VAL_TOT é o valor pago, em reais. MORTE 1 = a internação terminou em óbito."
+  },
+  "TISS": {
+   "uma_linha_e": "um evento de internação em plano privado",
+   "arquivo": "arquivo mensal de um estado, janeiro de 2019",
+   "n_colunas": 24,
+   "colunas": [
+    "FAIXA_ETARIA",
+    "SEXO",
+    "CD_MUNICIPIO_BENEFICIARIO",
+    "NM_MODALIDADE",
+    "UF_PRESTADOR",
+    "ANO_MES_EVENTO",
+    "CD_CARATER_ATENDIMENTO",
+    "CD_TIPO_INTERNACAO",
+    "CD_MOTIVO_SAIDA"
+   ],
+   "linhas": [
+    [
+     "40 a 49",
+     "Masculino",
+     "120040",
+     "Autogestão",
+     "AC",
+     "2019-01",
+     "1",
+     "2",
+     "11"
+    ],
+    [
+     "50 a 59",
+     "Feminino",
+     "120040",
+     "Autogestão",
+     "AC",
+     "2019-01",
+     "1",
+     "2",
+     "11"
+    ]
+   ],
+   "como_ler": "Uma linha é um evento de internação em plano privado. Só há faixa etária, sem valor em reais. Motivo de saída 41 a 43 = óbito."
+  },
+  "SIB": {
+   "uma_linha_e": "um vínculo entre uma pessoa e um plano",
+   "arquivo": "arquivo de um estado, fotografia de 2026-08",
+   "n_colunas": 27,
+   "colunas": [
+    "ID_TEMPO_COMPETENCIA",
+    "DT_NASCIMENTO",
+    "TP_SEXO",
+    "DT_CONTRATACAO",
+    "CD_MUNICIPIO",
+    "SG_UF"
+   ],
+   "linhas": [
+    [
+     "2026-08",
+     "1968",
+     "M",
+     "2009-04",
+     "120040",
+     "AC"
+    ],
+    [
+     "2026-08",
+     "1968",
+     "M",
+     "2011-05",
+     "120040",
+     "AC"
+    ],
+    [
+     "2026-08",
+     "1972",
+     "M",
+     "1999-09",
+     "120040",
+     "AC"
+    ]
+   ],
+   "como_ler": "Uma linha é um vínculo entre uma pessoa e um plano. Datas só com ano e mês, nascimento só com o ano. Sem nome nem CPF."
+  }
+ },
+ "resumos": {
+  "sim_obitos.csv": {
+   "colunas": [
+    "ano",
+    "uf",
+    "sexo",
+    "idade",
+    "causa",
+    "cid",
+    "obitos"
+   ],
+   "linhas": [
+    [
+     "1979",
+     "11",
+     "0",
+     "60",
+     "0846",
+     "9",
+     "1"
+    ],
+    [
+     "1979",
+     "11",
+     "1",
+     "0",
+     "0090",
+     "9",
+     "38"
+    ],
+    [
+     "1979",
+     "11",
+     "1",
+     "0",
+     "0091",
+     "9",
+     "95"
+    ],
+    [
+     "1979",
+     "11",
+     "1",
+     "0",
+     "0092",
+     "9",
+     "7"
+    ],
+    [
+     "1979",
+     "11",
+     "1",
+     "0",
+     "0093",
+     "9",
+     "3"
+    ]
+   ]
+  },
+  "sihsus_internacoes.csv": {
+   "colunas": [
+    "ano",
+    "mes",
+    "uf",
+    "sexo",
+    "idade",
+    "causa",
+    "carater",
+    "internacoes"
+   ],
+   "linhas": [
+    [
+     "2008",
+     "01",
+     "11",
+     "1",
+     "0",
+     "A049",
+     "01",
+     "31"
+    ],
+    [
+     "2008",
+     "01",
+     "11",
+     "1",
+     "0",
+     "A049",
+     "02",
+     "14"
+    ],
+    [
+     "2008",
+     "01",
+     "11",
+     "1",
+     "0",
+     "A059",
+     "02",
+     "9"
+    ],
+    [
+     "2008",
+     "01",
+     "11",
+     "1",
+     "0",
+     "A081",
+     "01",
+     "1"
+    ],
+    [
+     "2008",
+     "01",
+     "11",
+     "1",
+     "0",
+     "A081",
+     "02",
+     "1"
+    ]
+   ]
+  },
+  "tiss_cons_eventos.csv": {
+   "colunas": [
+    "ano",
+    "mes",
+    "uf",
+    "cod_municipio_benef",
+    "sexo",
+    "faixa",
+    "carater",
+    "tipo_internacao",
+    "eventos"
+   ],
+   "linhas": [
+    [
+     "2015",
+     "01",
+     "AC",
+     "",
+     "",
+     "Não identificado",
+     "1",
+     "1",
+     "2"
+    ],
+    [
+     "2015",
+     "01",
+     "AC",
+     "",
+     "",
+     "Não identificado",
+     "1",
+     "2",
+     "5"
+    ],
+    [
+     "2015",
+     "01",
+     "AC",
+     "",
+     "",
+     "Não identificado",
+     "1",
+     "4",
+     "1"
+    ],
+    [
+     "2015",
+     "01",
+     "AC",
+     "",
+     "",
+     "Não identificado",
+     "2",
+     "1",
+     "4"
+    ],
+    [
+     "2015",
+     "01",
+     "AC",
+     "",
+     "",
+     "Não identificado",
+     "2",
+     "2",
+     "4"
+    ]
+   ]
+  },
+  "sib_vinculos.csv": {
+   "colunas": [
+    "ano",
+    "mes",
+    "uf",
+    "sexo",
+    "idade",
+    "situacao",
+    "vinculos"
+   ],
+   "linhas": [
+    [
+     "2026",
+     "07",
+     "SP",
+     "F",
+     "",
+     "ativo",
+     "31"
+    ],
+    [
+     "2026",
+     "07",
+     "SP",
+     "F",
+     "",
+     "inativo",
+     "27404"
+    ],
+    [
+     "2026",
+     "07",
+     "SP",
+     "F",
+     "0",
+     "ativo",
+     "63002"
+    ],
+    [
+     "2026",
+     "07",
+     "SP",
+     "F",
+     "0",
+     "inativo",
+     "5764"
+    ],
+    [
+     "2026",
+     "07",
+     "SP",
+     "F",
+     "1",
+     "ativo",
+     "127092"
+    ]
+   ]
+  }
+ }
+}

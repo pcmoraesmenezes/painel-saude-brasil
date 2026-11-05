@@ -40,6 +40,8 @@ SECOES = [
     "1. De onde vêm os dados?",
     "2. De quando são?",
     "3. Onde estão no país?",
+    "4. Como é um registro?",
+    "5. Como as bases se cruzam?",
 ]
 
 # Uma família por tipo de dado: nome de uso comum, cor fixa, tabela do perfil, unidade.
@@ -52,6 +54,11 @@ FAMILIAS = {
                 unidade="vínculos ativos", taxa=False),
     "ibge": dict(nome="População", cor="pop", arq="ibge_pop_municipio.csv", unidade="habitantes", taxa=False),
 }
+# Tabela resumida -> arquivo bruto de onde sai a amostra.
+BRUTO_DO_RESUMO = {"sim_obitos.csv": "SIM", "sihsus_internacoes.csv": "SIH", "tiss_cons_eventos.csv": "TISS",
+                   "sib_vinculos.csv": "SIB"}
+RESUMOS = {"sim_obitos.csv": "Óbitos", "sihsus_internacoes.csv": "Internações no SUS",
+           "tiss_cons_eventos.csv": "Internações em planos de saúde", "sib_vinculos.csv": "Vínculos com planos de saúde"}
 # Nome de uso comum e família de cada tabela agregada.
 TABELAS = {
     "sim_obitos.csv": ("Óbitos no Brasil", "obitos"),
@@ -77,15 +84,69 @@ MIN_CASOS = 5  # abaixo disso o município fica cinza: "poucos casos"
 
 
 
+CRUZAMENTOS = {
+    "Óbitos × população": ("Feito neste painel", "município (ou estado) e ano",
+                           "Divide os óbitos do ano pela população do mesmo lugar e ano: é a taxa por 100 mil habitantes do mapa.",
+                           "O município vale o de residência da pessoa. A população municipal só existe para 2015 a 2021 e "
+                           "2024 em diante, e as duas fases são de revisões diferentes do IBGE."),
+    "Internações no SUS × população": ("Feito neste painel", "município (ou estado) e ano",
+                                       "Divide as internações do ano pela população do mesmo lugar e ano.",
+                                       "Vale o município de residência do paciente, não o do hospital. O último ano disponível "
+                                       "está incompleto e fica de fora da taxa."),
+    "Internações em planos × população": ("Possível, não feito aqui", "município do beneficiário e ano",
+                                          "Daria a internação em plano por habitante, ou por vínculo, em cada município.",
+                                          "A contagem soma linhas do arquivo, não eventos distintos, e a população só cobre "
+                                          "parte dos anos."),
+    "Vínculos com planos × população": ("Possível, não feito aqui", "município e ano",
+                                        "Daria a parcela da população com plano de saúde em cada município.",
+                                        "O arquivo de vínculos é uma fotografia de uma data só; ele tem vínculos ativos e inativos."),
+    "Óbitos × internações no SUS": ("Possível, não feito aqui", "município de residência, ano e causa (CID-10)",
+                                    "Compararia onde se morre com onde se interna, pela mesma causa.",
+                                    "Antes de 1996 os óbitos usam CID-9; as duas bases só têm o código de causa em comum a "
+                                    "partir daí."),
+    "Países (OMS e ONU)": ("Possível, não feito aqui", "país e ano",
+                           "Daria a mortalidade por habitante de cada país, juntando óbitos da OMS e população da ONU.",
+                           "Cada fonte nomeia os países de um jeito, então é preciso uma tabela de equivalência entre eles."),
+}
+
+CAMPOS = [
+    ("Óbitos", "Residência da pessoa (6 dígitos; 7 até 1995)", "1 = masculino, 2 = feminino", "Código com unidade e valor"),
+    ("Internações no SUS", "Residência do paciente (6 dígitos)", "1 = masculino, 3 = feminino", "Em anos"),
+    ("Internações em planos", "Residência do beneficiário (6 dígitos)", "Masculino, Feminino", "Só faixa etária"),
+    ("Vínculos com planos", "Residência do beneficiário (6 dígitos)", "M, F", "Só o ano de nascimento"),
+    ("População (IBGE)", "Código de 7 dígitos; os 6 primeiros batem com as demais", "Ambos, Homens, Mulheres", "Idade simples"),
+]
+
+GRAFO = """digraph G {
+ rankdir=LR; bgcolor="transparent"; nodesep=0.3; ranksep=1.2;
+ node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=14, fontcolor="#0e1117", color="transparent", margin="0.2,0.12"];
+ edge [color="#9aa4b2", fontcolor="#cbd5e1", fontname="Helvetica", fontsize=12, penwidth=1.6, arrowhead=none];
+ SIM [label="Óbitos", fillcolor="#d9585a"];
+ SIH [label="Internações no SUS", fillcolor="#3a88cc"];
+ TIS [label="Internações em planos", fillcolor="#2e9e66"];
+ SIB [label="Vínculos com planos", fillcolor="#bf8a24"];
+ IBG [label="População (IBGE)", fillcolor="#8d6cc4"];
+ WHO [label="Óbitos de países (OMS)", fillcolor="#d9585a"];
+ WPP [label="População de países (ONU)", fillcolor="#8d6cc4"];
+ SIM -> IBG [label="município e ano\nfeito"];
+ SIH -> IBG [label="município e ano\nfeito"];
+ TIS -> IBG [label="município e ano", style=dotted];
+ SIB -> IBG [label="município", style=dotted];
+ SIM -> SIH [label="município, ano e causa", style=dotted];
+ WHO -> WPP [label="país e ano", style=dotted];
+}"""
+
+
 @st.cache_data
 def carregar():
     perfil = json.loads((DATA / "perfil_agregados.json").read_text(encoding="utf-8"))
     fontes = pd.read_csv(DATA / "fontes.csv", dtype=str).fillna("")
+    amostras = json.loads((DATA / "amostras.json").read_text(encoding="utf-8"))
     mun = pd.read_csv(DATA / "municipios.csv", dtype={"cod": str})
     nomes = pd.read_csv(DATA / "municipios_nomes.csv", dtype=str)
     nomes = {c[:6]: f"{n} ({u})" for c, n, u in zip(nomes["cod7"], nomes["nome"], nomes["uf"])}
     popproj = pd.read_csv(DATA / "pop_uf_projecao.csv")
-    return perfil, fontes, mun, nomes, popproj
+    return perfil, fontes, amostras, mun, nomes, popproj
 
 
 @st.cache_resource
@@ -96,7 +157,7 @@ def carregar_geo():
     return uf, m, sete
 
 
-perfil, fontes, mun, nomes, popproj = carregar()
+perfil, fontes, amostras, mun, nomes, popproj = carregar()
 
 
 # ------------------------------------------------------------------ formatação
@@ -217,8 +278,9 @@ if secao == SECOES[0]:
         p = total_por_ano("ibge_pop_municipio.csv")
         cartao("Habitantes (IBGE)", milhoes(p.iloc[-1]), f"estimativa de {p.index[-1]}", "pop")
     st.markdown("##### Por onde começar")
-    b = st.columns(3)
-    for col, s, txt in zip(b, SECOES[1:], ["De onde vêm?", "De quando são?", "Onde estão?"]):
+    b = st.columns(5)
+    for col, s, txt in zip(b, SECOES[1:], ["De onde vêm?", "De quando são?", "Onde estão?", "Como é um registro?",
+                                           "Como se cruzam?"]):
         col.button(txt, key=f"hub_{s}", on_click=ir, args=(s,), width="stretch")
     st.caption("Dados públicos do Ministério da Saúde, da ANS e do IBGE, sem resultado de análise. As internações em "
                "planos somam linhas do arquivo, não eventos distintos.")
@@ -372,3 +434,37 @@ elif secao == SECOES[3]:
                         "revisões diferentes, então não compare as duas fases."))
     if notas:
         st.caption(" ".join(notas))
+
+# ------------------------------------------------------------------ 4. registro
+elif secao == SECOES[4]:
+    titulo(SECOES[4], "Uma linha real do arquivo de origem e a linha da tabela resumida em que ela se transforma.")
+    ag = st.selectbox("Base", list(RESUMOS), format_func=lambda k: RESUMOS[k], key="linha_base")
+    r = amostras["brutos"][BRUTO_DO_RESUMO[ag]]
+    st.markdown(f"##### Arquivo de origem: {r['uma_linha_e']}")
+    st.dataframe(pd.DataFrame(r["linhas"], columns=r["colunas"]), hide_index=True, width="stretch")
+    st.caption(f"{r['arquivo']}, {r['n_colunas']} colunas (aqui só algumas, sem datas completas nem números de "
+               f"identificação). {r['como_ler']}")
+    st.markdown("##### Tabela resumida: uma linha por combinação de chaves")
+    am = amostras["resumos"][ag]
+    st.dataframe(pd.DataFrame(am["linhas"], columns=am["colunas"]), hide_index=True, width="stretch")
+    st.caption(f"{inteiro(perfil[ag]['linhas'])} linhas no total. A última coluna é a contagem de registros que "
+               f"têm exatamente aquelas chaves.")
+    if ag == "tiss_cons_eventos.csv":
+        st.warning("Neste resumo a contagem é de linhas do arquivo, não de eventos distintos.")
+    if ag == "sib_vinculos.csv":
+        st.warning("Só a fotografia mais recente, com vínculos ativos e inativos.")
+
+# ------------------------------------------------------------------ 5. cruzamentos
+else:
+    titulo(SECOES[5], "Quais bases podem ser ligadas, por qual campo em comum e o que muda de uma para outra.")
+    st.graphviz_chart(GRAFO)  # tamanho natural: esticar a largura escala o desenho além da altura da tela
+    st.caption("Linha cheia: ligação feita neste painel (taxa por 100 mil habitantes no mapa). Pontilhada: os dois "
+               "lados têm o campo em comum, mas a ligação não foi feita aqui. A cor da caixa é a da família do dado.")
+    nome = st.radio("Detalhe da ligação", list(CRUZAMENTOS), horizontal=True, key="cruz_nome")
+    situacao, chave, faz, atencao = CRUZAMENTOS[nome]
+    st.markdown(f"**{nome}** · {situacao}  \n**Une por:** {chave}")
+    st.markdown(faz)
+    st.caption(atencao)
+    st.markdown("##### Campo de município e de sexo em cada base")
+    st.dataframe(pd.DataFrame(CAMPOS, columns=["Base", "Município", "Sexo", "Idade"]), hide_index=True,
+                 width="stretch")

@@ -1,11 +1,13 @@
 """Exercita cada seção e cada seletor do painel (AppTest headless)."""
+import json
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
 RAIZ = Path(__file__).resolve().parents[1]
 APP = str(RAIZ / "app" / "streamlit_app.py")
-SECOES = ["Início", "1. De onde vêm os dados?", "2. De quando são?", "3. Onde estão no país?"]
+SECOES = ["Início", "1. De onde vêm os dados?", "2. De quando são?", "3. Onde estão no país?",
+          "4. Como é um registro?", "5. Como as bases se cruzam?"]
 BASES_MAPA = ["sim", "sih", "tiss", "sib", "ibge"]
 
 
@@ -20,7 +22,7 @@ def novo(secao=None):
 
 def test_inicio_e_botoes_do_hub():
     at = novo()
-    for i in range(3):
+    for i in range(5):
         at = novo()
         at.button[i].click().run()
         assert not at.exception
@@ -41,6 +43,29 @@ def test_periodo_cada_serie():
     at = novo(SECOES[2])
     for o in ["sim", "sih", "tiss"]:
         at.radio(key="serie_base").set_value(o).run()
+        assert not at.exception, o
+
+
+def test_registro_cada_base():
+    at = novo(SECOES[4])
+    for k in ["sim_obitos.csv", "sihsus_internacoes.csv", "tiss_cons_eventos.csv", "sib_vinculos.csv"]:
+        at.selectbox(key="linha_base").set_value(k).run()
+        assert not at.exception, k
+
+
+def test_registro_sem_identificadores():
+    """A amostra pública não pode trazer número de AIH, CNES, IDs de plano nem datas completas."""
+    amostras = json.loads((RAIZ / "data" / "amostras.json").read_text(encoding="utf-8"))
+    proibidas = {"N_AIH", "CNES", "DT_INTER", "DT_SAIDA", "DTNASC", "DTOBITO", "CODESTAB", "ID_PLANO",
+                 "ID_EVENTO_ATENCAO_SAUDE", "CD_PLANO_RPS"}
+    for k, v in amostras["brutos"].items():
+        assert not proibidas & set(v["colunas"]), k
+
+
+def test_cruzamentos_cada_um():
+    at = novo(SECOES[5])
+    for o in at.radio(key="cruz_nome").options:
+        at.radio(key="cruz_nome").set_value(o).run()
         assert not at.exception, o
 
 
